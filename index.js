@@ -69,6 +69,14 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
+    const findByName =(name) => persons.find(x => x.name === name);
+
+
+    if (findByName(body.name)) {
+        return response.status(400).json({
+            error: 'name must be unique'
+        })
+    }
     const person = {
         name: body.name,
         number: body.number,
