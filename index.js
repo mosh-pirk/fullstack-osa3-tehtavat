@@ -34,6 +34,18 @@ app.use(express.json())
 app.get('/', (req, res) => {
     res.send('<h1>Hello Person App!</h1>')
 })
+app.get('/info', (req, res) => {
+    const count = persons && persons.length
+    const today = new Date();
+
+    console.log(count, today)
+
+
+
+
+
+    res.send(`<div> <h3>Phonebook has info for ${count} people</h3> <h3>${today}</h3></div>`)
+})
 
 const generateId = () => {
     const maxId = persons.length > 0
