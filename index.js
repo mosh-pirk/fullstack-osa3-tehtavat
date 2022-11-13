@@ -1,7 +1,10 @@
 const express = require('express')
 const morgan = require('morgan');
 const app = express()
-app.use(morgan('tiny'));
+
+morgan.token('data', (req, res) => JSON.stringify(req.body))
+app.use(morgan(':method :url :res[content-length] - :response-time ms :data'));
+
 
 let persons = [
     {
@@ -40,12 +43,6 @@ app.get('/info', (req, res) => {
     const count = persons && persons.length
     const today = new Date();
 
-    console.log(count, today)
-
-
-
-
-
     res.send(`<div> <h3>Phonebook has info for ${count} people</h3> <h3>${today}</h3></div>`)
 })
 
@@ -71,8 +68,7 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    const findByName =(name) => persons.find(x => x.name === name);
-
+    const findByName = (name) => persons.find(x => x.name === name);
 
     if (findByName(body.name)) {
         return response.status(400).json({
