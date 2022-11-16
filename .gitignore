@@ -45,6 +45,10 @@ package-lock.json
 
 # Editor
 .idea
+.DS_Store
+
+# Files
+.env
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/

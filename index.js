@@ -2,6 +2,7 @@ const express = require('express')
 const morgan = require('morgan');
 const app = express()
 const cors = require('cors')
+const Persons = require('./models/perosn')
 
 app.use(express.static('build'))
 app.use(cors())
@@ -9,54 +10,17 @@ app.use(cors())
 morgan.token('data', (req, res) => JSON.stringify(req.body))
 app.use(morgan(':method :url :res[content-length] - :response-time ms :data'));
 
-
-let persons = [
-    {
-        id: 1,
-        name: "Arto Hellas",
-        number: "040-123456"
-    },
-    {
-        id: 2,
-        name: "Ada Lovelace",
-        number: "39-44-5323523"
-    },
-    {
-        id: 3,
-        name: "Dan Abremov",
-        number: "12-43-234345"
-    },
-    {
-        id: 4,
-        name: "Mary Poppendick",
-        number: "39-23-6423122"
-    },
-    {
-        id: 5,
-        name: "Koodiin Tapahtuu muutoksia  ",
-        number: "40-25-6423911"
-    }
-]
-
 app.use(express.json())
 
 app.get('/', (req, res) => {
     res.send('<h1>Hello Person App!</h1>')
 })
-app.get('/info', (req, res) => {
-    const count = persons && persons.length
-    const today = new Date();
 
-    res.send(`<div> <h3>Phonebook has info for ${count} people</h3> <h3>${today}</h3></div>`)
+// get all persons
+app.get('/api/persons', (req, res) => {
+    Persons.find({}).then(data => res.json(data))
 })
-
-const generateId = () => {
-    const maxId = persons.length > 0
-        ? Math.max(...persons.map(n => n.id))
-        : 0
-    return maxId + 1
-}
-
+// add person
 app.post('/api/persons', (request, response) => {
     const body = request.body
 
@@ -72,46 +36,33 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    const findByName = (name) => persons.find(x => x.name === name);
-
-    if (findByName(body.name)) {
-        return response.status(400).json({
-            error: 'name must be unique'
-        })
-    }
     const person = {
         name: body.name,
         number: body.number,
-        id: generateId(),
     }
-
-    persons = persons.concat(person)
-
-    response.json(person)
+    const savedData = new Persons(person)
+    savedData.save()
+        .then(person => {
+            response.json(person).status(200)
+        })
+        .catch(err => response.status(400))
 })
-
-app.get('/api/persons', (req, res) => {
-    res.json(persons)
-})
-
+// delete one person
 app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    persons = persons.filter(x => x.id !== id)
+    const id = request.params.id
+    Persons.findByIdAndDelete(id).then(result => {
+        response.status(204).end()
+    }).catch(err => response.status(400).send(err.name))
 
-    response.status(204).end()
 })
-
+// get one person
 app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(x => x.id === id)
-
-    if (person) {
-        response.json(person)
-    } else {
-        response.status(404).send('person not found').end()
-    }
+    Persons.findById(request.params.id).then(data => response.status(200).json(data))
 })
-
+// get one person
+app.put('/api/persons/:id', (request, response) => {
+    Persons.findById(request.params.id).then(data => response.status(200).json(data))
+})
 const PORT = process.env.PORT || 8080
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
