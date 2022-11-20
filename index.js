@@ -23,7 +23,7 @@ app.get('/api/persons', (req, res) => {
 })
 // add person
 app.post('/api/persons', (request, response, next) => {
-    const savedData = new Persons(checkAndReturnPerson(request, response, false))
+    const savedData = new Persons(returnPersonObject(request, response, false))
     savedData.save()
         .then(person => {
            response.json(person).status(200)
@@ -47,7 +47,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 })
 // edit person
 app.put('/api/persons/:id', (request, response, next) => {
-    Persons.findByIdAndUpdate(request.params.id, checkAndReturnPerson(request, response, true))
+    Persons.findByIdAndUpdate(request.params.id, returnPersonObject(request, response, true))
         .then(data => {
             response.status(200).json(data)
         }).catch(error => next(error))
@@ -69,21 +69,8 @@ const errorHandler = (error, request, response, next) => {
 }
 
 
-const checkAndReturnPerson = (request, response, edit) => {
+const returnPersonObject = (request, response, edit) => {
     const body = request.body
-
-    if (!body.name) {
-        return response.status(400).json({
-            error: 'name missing'
-        })
-    }
-
-    if (!body.number) {
-        return response.status(400).json({
-            error: 'number missing'
-        })
-    }
-
     return edit
         ?
         {number: body.number}
