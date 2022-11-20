@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const app = express()
 const cors = require('cors')
 const Persons = require('./models/perosn')
+const {request, response} = require("express");
 
 app.use(express.static('build'))
 app.use(cors())
@@ -21,7 +22,53 @@ app.get('/api/persons', (req, res) => {
     Persons.find({}).then(data => res.json(data))
 })
 // add person
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
+    const savedData = new Persons(checkAndReturnPerson(request, response, false))
+    savedData.save()
+        .then(person => {
+           response.json(person).status(200)
+        })
+        .catch(error => next(error))
+})
+// delete one person
+app.delete('/api/persons/:id', (request, response, next) => {
+    const id = request.params.id
+    Persons.findByIdAndDelete(id).then(result => {
+       response.status(204).end()
+    }).catch(error => next(error))
+
+})
+// get one person
+app.get('/api/persons/:id', (request, response, next) => {
+    Persons.findById(request.params.id)
+        .then(data => {
+            response.status(200).json(data)
+        }).catch(error => next(error))
+})
+// edit person
+app.put('/api/persons/:id', (request, response, next) => {
+    Persons.findByIdAndUpdate(request.params.id, checkAndReturnPerson(request, response, true))
+        .then(data => {
+            response.status(200).json(data)
+        }).catch(error => next(error))
+})
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+
+
+const errorHandler = (error, request, response, next) => {
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+
+    next(error)
+}
+
+
+const checkAndReturnPerson = (request, response, edit) => {
     const body = request.body
 
     if (!body.name) {
@@ -36,33 +83,18 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    const person = {
-        name: body.name,
-        number: body.number,
-    }
-    const savedData = new Persons(person)
-    savedData.save()
-        .then(person => {
-            response.json(person).status(200)
-        })
-        .catch(err => response.status(400))
-})
-// delete one person
-app.delete('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    Persons.findByIdAndDelete(id).then(result => {
-        response.status(204).end()
-    }).catch(err => response.status(400).send(err.name))
+    return edit
+        ?
+        {number: body.number}
+        : {
+            name: body.name,
+            number: body.number,
+        }
+}
 
-})
-// get one person
-app.get('/api/persons/:id', (request, response) => {
-    Persons.findById(request.params.id).then(data => response.status(200).json(data))
-})
-// get one person
-app.put('/api/persons/:id', (request, response) => {
-    Persons.findById(request.params.id).then(data => response.status(200).json(data))
-})
+app.use(errorHandler)
+app.use(unknownEndpoint)
+
 const PORT = process.env.PORT || 8080
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)

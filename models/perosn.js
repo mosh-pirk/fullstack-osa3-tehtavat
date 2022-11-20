@@ -9,7 +9,7 @@ mongoose.connect(dbUrl)
     })
     .catch((error) => {
         console.log('error connecting to MongoDB:', error.message)
-    })
+    }).finally()
 
 const personSchema = new mongoose.Schema({
     name: String,
