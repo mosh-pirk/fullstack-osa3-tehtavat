@@ -4,4 +4,4 @@ appRouter.get('', (req, res) => {
 })
 
 
-module.exports = {appRouter}
+module.exports = { appRouter }
