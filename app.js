@@ -9,10 +9,11 @@ const { blogsRouter } = require('./controllers/blogs')
 const mongoose = require('mongoose')
 const { connect } = require('mongoose')
 const { info, error } = require('./utils/logger')
-const dbUrl = process.env.MONGODB_URI
+const { MONGODB_URI } = require('./utils/conf')
+
 const app = express()
 mongoose.set('strictQuery', false)
-connect(dbUrl)
+connect(MONGODB_URI)
   .then(result => {
     info('connected to MongoDB', result.STATES.connected)
   })
