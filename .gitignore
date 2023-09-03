@@ -49,6 +49,7 @@ package-lock.json
 
 # Files
 .env
+memo
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/

@@ -2,39 +2,31 @@ const personsRouter = require('express').Router()
 const Persons = require('../models/person')
 
 // get all persons
-personsRouter.get('', (req, res) => {
-  Persons.find({}).then(data => res.json(data))
+personsRouter.get('', async (request, response) => {
+  const persons = await Persons.find({})
+  response .status(200).json(persons)
 })
 // add person
-personsRouter.post('', (request, response, next) => {
-  const savedData = new Persons(returnPersonObject(request, response, false))
-  savedData.save()
-    .then(person => {
-      response.json(person).status(200)
-    })
-    .catch(error => next(error))
+personsRouter.post('', async (request, response) => {
+  const person = new Persons(returnPersonObject(request, response, false))
+  const savedData = person.save()
+  response.json(savedData).status(200)
 })
 // delete one person
-personsRouter.delete('/:id', (request, response, next) => {
+personsRouter.delete('/:id', async (request, response) => {
   const id = request.params.id
-  Persons.findByIdAndDelete(id).then(() => {
-    response.status(204).end()
-  }).catch(error => next(error))
-
+  await Persons.findByIdAndDelete(id)
+  response.status(204).end()
 })
 // get one person
-personsRouter.get('/:id', (request, response, next) => {
-  Persons.findById(request.params.id)
-    .then(data => {
-      response.status(200).json(data)
-    }).catch(error => next(error))
+personsRouter.get('/:id', async (request, response) => {
+  const person = await Persons.findById(request.params.id)
+  response.status(200).json(person)
 })
 // edit person
-personsRouter.put('/:id', (request, response, next) => {
-  Persons.findByIdAndUpdate(request.params.id, returnPersonObject(request, response, true))
-    .then(data => {
-      response.status(200).json(data)
-    }).catch(error => next(error))
+personsRouter.put('/:id', async (request, response) => {
+  const person = await Persons.findByIdAndUpdate(request.params.id, returnPersonObject(request, response, true))
+  response.status(200).json(person)
 })
 
 const returnPersonObject = (request, response, edit) => {
