@@ -67,6 +67,31 @@ describe('Blogs tests', () => {
       .expect(400)
   })
 
+  test('Yksittäisen blogin poisto on mahdollinen', async () => {
+    const blogs = await api.get('/api/blogs').expect(200)
+    const countOfBlogs = blogs.body.length
+    await api
+      .delete(`/api/blogs/${blogs.body[0].id}`)
+      .expect(204)
+
+    const blogs2 = await api.get('/api/blogs').expect(200)
+    expect(blogs2.body).toHaveLength(countOfBlogs -1)
+  })
+
+
+  test('Yksittäisen blogin muokkaaminen on mahdollinen', async () => {
+    const blogs = await api.get('/api/blogs').expect(200)
+
+    let blogTOModify = blogs.body[0]
+    blogTOModify.likes = 300
+    await api
+      .put(`/api/blogs/${blogs.body[0].id}`).send(blogTOModify)
+      .expect(200)
+
+    const modifiedBlog = await api.get(`/api/blogs/${blogs.body[0].id}`).expect(200)
+    expect(modifiedBlog.body.likes).toBe(300)
+  })
+
   beforeEach(async () => {
     await Blog.deleteMany({})
     await Blog.insertMany(listOfBlogsForTest)
