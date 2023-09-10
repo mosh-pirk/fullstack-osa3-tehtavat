@@ -50,8 +50,15 @@ const listWithOneBlog = [
   }
 ]
 
+const newUser = {
+  username: 'moha9900',
+  name: 'Mohamid',
+  password: 'salainen',
+}
+
 
 module.exports = {
   listOfBlogsForTest,
-  listWithOneBlog
+  listWithOneBlog,
+  newUser
 }

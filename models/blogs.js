@@ -11,7 +11,11 @@ const blogSchema = Schema({
     required: true, // This field is required
   },
   url: String,
-  likes: Number
+  likes: Number,
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }
 })
 
 

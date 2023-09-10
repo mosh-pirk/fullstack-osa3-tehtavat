@@ -1,5 +1,6 @@
 const { warn } = require('../logger')
 const { countBy, maxBy, keys, groupBy, mapValues, sumBy } = require('lodash')
+const { User } = require('../../models/user')
 const dummy = (blogs) => {
   if (typeof blogs === 'object') {
     return blogs.length || 0
@@ -46,6 +47,12 @@ const authorWithMostLikes = (blogs) => {
     return undefined
   }
 }
+
+const usersInDb = async () => {
+  const users = await User.find({})
+  return users.map(u => u.toJSON())
+}
 module.exports = {
-  dummy, totalLikes, favoriteBlog, mostBlogs, authorWithMostLikes
+  dummy, totalLikes, favoriteBlog, mostBlogs, authorWithMostLikes,
+  usersInDb
 }
