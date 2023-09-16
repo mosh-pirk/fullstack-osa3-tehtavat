@@ -19,18 +19,16 @@ blogsRouter.get('', async (request, response) => {
 blogsRouter.post('', async (request, response) => {
   let blogData = request.body
 
-  /*  const decodedToken = verify(getTokenFrom(request), process.env.SECRET)
+  const decodedToken = verify(getTokenFrom(request), process.env.SECRET)
   if (!decodedToken.id) {
     return response.status(401).json({ error: 'token invalid' })
   }
   const user = await User.findById(decodedToken.id)
-*/
+
   if (blogData.likes === undefined) {
     blogData.likes = 0
   }
 
-  const users = await User.find({})
-  const user = users[0]
   const blog = new Blog({ ...request.body, user: user._id })
   const savedBlog = await blog.save()
   user.blogs = user.blogs.concat(blog._id)
