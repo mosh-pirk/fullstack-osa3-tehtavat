@@ -4,6 +4,7 @@ const supertest = require('supertest')
 const app = require('../../app')
 const { usersInDb } = require('../../utils/testhelpers/list_helper')
 const { newUser } = require('../../utils/testhelpers/dummyData')
+const mongoose = require('mongoose')
 const api = supertest(app)
 
 describe('when there is initially one user at db', () => {
@@ -14,6 +15,10 @@ describe('when there is initially one user at db', () => {
     const user = new User({ username: 'root', passwordHash })
 
     await user.save()
+  })
+
+  afterAll(async () => {
+    await mongoose.connection.close()
   })
 
   test('creation succeeds with a fresh username', async () => {

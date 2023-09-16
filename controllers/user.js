@@ -27,7 +27,7 @@ usersRouter.post('', async (request, response) => {
 })
 // todo: remove or add role
 usersRouter.get('', async (request, response) => {
-  const users = await User.find({})
+  const users = await User.find({}).populate('blogs')
   response.status(200).json(users)
 })
 

@@ -3,6 +3,8 @@ const app = require('../../app')
 const mongoose = require('mongoose')
 const { Blog } = require('../../models/blogs')
 const { listOfBlogsForTest } = require('../../utils/testhelpers/dummyData')
+const { User } = require('../../models/user')
+const bcrypt = require('bcrypt')
 const api = supertest(app)
 
 describe('Blogs tests', () => {
@@ -95,6 +97,13 @@ describe('Blogs tests', () => {
   beforeEach(async () => {
     await Blog.deleteMany({})
     await Blog.insertMany(listOfBlogsForTest)
+
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    const user = new User({ username: 'root', passwordHash })
+
+    await user.save()
   })
 
   afterAll(async () => {
