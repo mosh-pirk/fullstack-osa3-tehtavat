@@ -1,6 +1,4 @@
 const { Blog } = require('../models/blogs')
-const { verify } = require('jsonwebtoken')
-const { User } = require('../models/user')
 const blogsRouter = require('express').Router()
 
 
@@ -11,12 +9,7 @@ blogsRouter.get('', async (request, response) => {
 
 blogsRouter.post('', async (request, response) => {
   let blogData = request.body
-
-  const decodedToken = verify(request['headers'].token, process.env.SECRET)
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: 'token invalid' })
-  }
-  const user = await User.findById(decodedToken.id)
+  const user = request['headers'].user
 
   if (blogData.likes === undefined) {
     blogData.likes = 0
@@ -29,11 +22,7 @@ blogsRouter.post('', async (request, response) => {
   response.status(201).json(savedBlog)
 })
 blogsRouter.delete('/:id', async (request, response) => {
-  const decodedToken = verify(request['headers'].token, process.env.SECRET)
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: 'token invalid' })
-  }
-  const user = await User.findById(decodedToken.id)
+  const user = request['headers'].user
   const blog = await Blog.findById(request.params.id)
 
   if ( blog.user.toString() === user.id.toString() ) {
