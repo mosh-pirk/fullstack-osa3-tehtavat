@@ -39,8 +39,25 @@ blogsRouter.get('/:id', async (request, response) => {
   response.status(200).json(blog)
 })
 blogsRouter.put('/:id', async (request, response) => {
-  const blog = await Blog.findByIdAndUpdate(request.params.id, request.body)
-  response.status(200).json(blog)
+
+  const user = request['headers'].user
+  const blog = await Blog.findById(request.params.id)
+
+  if ( blog.user.toString() === user.id.toString() ) {
+    const modifiedBlog = request.body
+
+    for (const key in blog) {
+      if (modifiedBlog[key] && key !== 'user') {
+        blog[key] = request.body[key]
+      }
+    }
+    await Blog.updateOne(blog)
+    response.status(200).json(blog)
+  } else {
+    response.status(401).json({ error: 'User is Unauthorized' })
+  }
+
+
 })
 
 module.exports = {

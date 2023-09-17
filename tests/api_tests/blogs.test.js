@@ -8,6 +8,7 @@ const bcrypt = require('bcrypt')
 const api = supertest(app)
 
 describe('Blogs tests', () => {
+  let token = ''
 
   test('Blogs has connection to server', async () => {
     await api
@@ -36,6 +37,7 @@ describe('Blogs tests', () => {
 
     const savedBlog = await api
       .post('/api/blogs').send(toAddBlog)
+      .set({ Authorization: token })
       .expect(201)
       .expect('Content-Type', /application\/json/)
     expect(savedBlog.body.id).toBeDefined()
@@ -52,6 +54,7 @@ describe('Blogs tests', () => {
 
     const savedBlog = await api
       .post('/api/blogs').send(toAddBlog)
+      .set({ Authorization: token })
       .expect(201)
       .expect('Content-Type', /application\/json/)
     expect(savedBlog.body.likes).toBeDefined()
@@ -66,6 +69,7 @@ describe('Blogs tests', () => {
 
     await api
       .post('/api/blogs').send(toAddBlog)
+      .set({ Authorization: token })
       .expect(400)
   })
 
@@ -74,6 +78,7 @@ describe('Blogs tests', () => {
     const countOfBlogs = blogs.body.length
     await api
       .delete(`/api/blogs/${blogs.body[0].id}`)
+      .set({ Authorization: token })
       .expect(204)
 
     const blogs2 = await api.get('/api/blogs').expect(200)
@@ -88,6 +93,7 @@ describe('Blogs tests', () => {
     blogTOModify.likes = 300
     await api
       .put(`/api/blogs/${blogs.body[0].id}`).send(blogTOModify)
+      .set({ Authorization: token })
       .expect(200)
 
     const modifiedBlog = await api.get(`/api/blogs/${blogs.body[0].id}`).expect(200)
@@ -95,15 +101,26 @@ describe('Blogs tests', () => {
   })
 
   beforeEach(async () => {
-    await Blog.deleteMany({})
-    await Blog.insertMany(listOfBlogsForTest)
-
     await User.deleteMany({})
 
     const passwordHash = await bcrypt.hash('sekret', 10)
     const user = new User({ username: 'root', passwordHash })
 
-    await user.save()
+    const savedUser = await user.save()
+    const tokenHeader = await api
+      .post('/api/login')
+      .send({
+        'username': 'root',
+        'password': 'sekret'
+      })
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    token = tokenHeader.body.token ? 'Bearer '+tokenHeader.body.token : undefined
+
+    await Blog.deleteMany({})
+    listOfBlogsForTest.forEach(blog => blog['user'] = savedUser._id.toString())
+    await Blog.insertMany(listOfBlogsForTest)
   })
 
   afterAll(async () => {
