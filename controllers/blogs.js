@@ -29,9 +29,21 @@ blogsRouter.post('', async (request, response) => {
   response.status(201).json(savedBlog)
 })
 blogsRouter.delete('/:id', async (request, response) => {
-  const id = request.params.id
-  await Blog.findByIdAndDelete(id)
-  response.status(204).end()
+  const decodedToken = verify(request['headers'].token, process.env.SECRET)
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+  const user = await User.findById(decodedToken.id)
+  const blog = await Blog.findById(request.params.id)
+
+  if ( blog.user.toString() === user.id.toString() ) {
+    const id = request.params.id
+    await Blog.findByIdAndDelete(id)
+    response.status(204).end()
+  } else {
+    response.status(401).json({ error: 'User is Unauthorized' })
+  }
+
 })
 blogsRouter.get('/:id', async (request, response) => {
   const blog = await Blog.findById(request.params.id).populate('user')
