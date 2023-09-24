@@ -57,8 +57,8 @@ blogsRouter.put('/:id', async (request, response) => {
         blog[key] = request.body[key]
       }
     }
-    await Blog.updateOne(blog)
-    response.status(200).json(blog)
+    const updated = await Blog.findOneAndUpdate({ _id: blog.id }, blog).populate('user')
+    response.status(200).json(updated)
   } else {
     response.status(401).json({ error: 'User is Unauthorized' })
   }
