@@ -3,8 +3,14 @@ const blogsRouter = require('express').Router()
 
 
 blogsRouter.get('', async (request, response) => {
-  const blogs = await Blog.find({}).populate('user')
-  response.status(200).json(blogs)
+  const user = request['headers'].user
+  if (user) {
+    const blogs = await Blog.find({}).populate('user')
+    response.status(200).json(blogs)
+  } else {
+    response.status(401).json({ error: 'User is Unauthorized' })
+  }
+
 })
 
 blogsRouter.post('', async (request, response) => {
